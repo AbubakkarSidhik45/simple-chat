@@ -37,7 +37,6 @@ This document provide an overview of this application, including the component f
     else:
        render SignupForm
 
-
 **API Used:**
 
 - `POST /api/sigup` to create a new account.
@@ -71,7 +70,7 @@ This document provide an overview of this application, including the component f
 **Functionality:**
 
 - Fetches messages for a specific chat room from the backend API using page and messageId params.
-- Page is to keep track of how times we called the API to fecth messages. This can be used for backend what chunk of messages we are expecting
+- Page is to keep track of how times we called the API to fecth messages. This can be used for backend what chunk of messages we are expecting.
 - MessageId is only come into the picture when user visited the chat through the forwarded link. We passed this to backend to tell we are expecting the chunk of messages nearest to that link message. If we don't find messageId in params we simply send it as 0 to tell backend we are not expecting any particular message.
 - Fetches the new messages that user recieved from other user by calling the API of setInterval time, Assuume 1 sec, Using the response we can add the newly recieved message or show the user on other end is typing or not.
 - When new messages added by us, it calls add message api to store it to database.
@@ -79,13 +78,15 @@ This document provide an overview of this application, including the component f
 **Pseudocodes**
 
     state roomId = 1
-    function loadMessages():
-        if messageId:
-            dispatch(fetchMessages(roomId, messageId))
-        else:
-            dispatch(fetchMessages(roomId, 0))
+    // plain text, act as a compoenent did mount
+    useEffect(() => {
+        if (messageId) {
+            dispatch(fetchMessages(roomId, 1, messageId));
+        } else {
+            dispatch(fetchMessages(roomId, 1, 0));
+        }
+    }, [dispatch, roomId, messageId]);
 
-    // plain text
     useEffect(() => {
         const intervalId = setInterval(() => {
             dispatch(fetchNewMessages(roomId));
@@ -93,6 +94,15 @@ This document provide an overview of this application, including the component f
 
         return () => clearInterval(intervalId);
     }, [dispatch, roomId]);
+
+    function loadOlderMessages() = {
+        const newPage = page + 1;
+        if (messageId):
+            dispatch(fetchMessages(roomId, newPage messageId));
+        else:
+            dispatch(fetchMessages(roomId, newPage, 0));
+        setPage(newPage);
+    }
 
 **API Used:**
 
@@ -116,7 +126,7 @@ This document provide an overview of this application, including the component f
 - Maintains the scroll position when new messages are loaded using Ref scrollTop for better UX.
 - If old message or lastest message is fetched then retricting the fetching action accordingly.
 - Based on users we can plcae the text in left or right using text-allign.
-- When user double click the text using onContextMenu event it will show the forward option that in ContextMenu component.
+- When user right click the text, and using onContextMenu event it will show the forward option that in ContextMenu component.
 
 **Pseudocodes**
 
@@ -132,11 +142,10 @@ This document provide an overview of this application, including the component f
 
     // To show last conversatiion first when component mount:
     function componentDidMount():
-    if messageId is provided:
-        loadMessagesUntil(messageId)
+    if page !== 1:
+        chatMessage.scrollTop = chatMessage.previousHeight
     else:
         chatMessage.scrollTop = chatMessage.scrollHeight
-
 
 ### ContextMenu
 
